@@ -2,8 +2,8 @@
     "verbose": true,
     "minVersion": "0.8.0",
     "compatibilityLevel": "JAVA_8",
-    "package": "com.desco.examplemod.mixins",
-    "refmap": "examplemod.mixins.refmap.json",
+    "package": "com.mel.meltributes.mixins",
+    "refmap": "meltributes.mixins.refmap.json",
     "mixins": [
         "MinecraftMixin"
     ]

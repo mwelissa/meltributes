@@ -6,6 +6,7 @@ plugins {
 
     java
     kotlin("jvm") version "1.8.0"
+    kotlin("plugin.serialization") version "1.8.10"
     id("com.github.johnrengelman.shadow") version "6.1.0"
     id("net.minecraftforge.gradle.forge") from "com.github.debuggingss:ForgeGradle:FG_2.1-SNAPSHOT"
     id("org.spongepowered.mixin") from "com.github.xcfrg:MixinGradle:0.6-SNAPSHOT"
@@ -13,7 +14,7 @@ plugins {
 
 sourceSets {
     main {
-        extra["refMap"] = "examplemod.mixins.refmap.json"
+        extra["refMap"] = "meltributes.mixins.refmap.json"
         output.setResourcesDir(java.outputDir)
     }
 }
@@ -26,7 +27,7 @@ minecraft {
     makeObfSourceJar = false
     clientJvmArgs.add("-Delementa.dev=true")
     clientRunArgs.add("--tweakClass gg.essential.loader.stage0.EssentialSetupTweaker")
-    clientRunArgs.add("--mixin examplemod.mixins.json")
+    clientRunArgs.add("--mixin meltributes.mixins.json")
 }
 
 val embed: Configuration by configurations.creating {
@@ -43,7 +44,7 @@ repositories {
 dependencies {
     embed("gg.essential:loader-launchwrapper:1.1.3")
     compileOnly("gg.essential:essential-1.8.9-forge:1759")
-
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
     annotationProcessor("org.spongepowered:mixin:0.8.5:processor")
     compileOnly("org.spongepowered:mixin:0.8.5")
 }
@@ -68,7 +69,7 @@ tasks {
             "ForceLoadAsMod" to true,
             "ModSide" to "CLIENT",
             "TweakClass" to "gg.essential.loader.stage0.EssentialSetupTweaker",
-            "MixinConfigs" to "examplemod.mixins.json"
+            "MixinConfigs" to "meltributes.mixins.json"
         )
 
         configurations = listOf(embed)

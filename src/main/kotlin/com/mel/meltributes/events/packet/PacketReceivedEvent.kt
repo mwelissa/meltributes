@@ -1,8 +1,8 @@
-package com.desco.examplemod.events.packet
+package com.mel.meltributes.events.packet
 
 import net.minecraft.network.Packet
 import net.minecraftforge.fml.common.eventhandler.Cancelable
 import net.minecraftforge.fml.common.eventhandler.Event
 
 @Cancelable
-class PacketSentEvent(val packet: Packet<*>): Event()
+class PacketReceivedEvent(val packet: Packet<*>): Event()

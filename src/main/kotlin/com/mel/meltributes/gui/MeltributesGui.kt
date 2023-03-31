@@ -11,17 +11,21 @@ import gg.essential.elementa.ElementaVersion
 import gg.essential.elementa.UIComponent
 import gg.essential.elementa.WindowScreen
 import gg.essential.elementa.components.*
+import gg.essential.elementa.components.input.UITextInput
 import gg.essential.elementa.constraints.CenterConstraint
 import gg.essential.elementa.constraints.CramSiblingConstraint
+import gg.essential.elementa.constraints.RelativeConstraint
 import gg.essential.elementa.dsl.childOf
 import gg.essential.elementa.dsl.constrain
 import gg.essential.elementa.dsl.percent
 import gg.essential.elementa.dsl.pixels
 import gg.essential.universal.UGraphics
+import gg.essential.universal.UKeyboard
 import gg.essential.universal.UMatrixStack
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.boolean
 import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.RenderHelper
@@ -30,6 +34,8 @@ import net.minecraft.item.ItemStack
 import net.minecraft.nbt.CompressedStreamTools
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.nbt.NBTTagList
+import net.minecraft.util.ChatComponentText
+import net.minecraft.util.MathHelper
 import org.apache.commons.codec.binary.Base64
 import org.lwjgl.opengl.GL11
 import java.awt.Color
@@ -43,9 +49,10 @@ import kotlin.math.pow
 object MeltributesGui: WindowScreen(ElementaVersion.V1) {
 
     var itemComponentList = mutableListOf<UIBlock>()
-
+    var attribute = ""
+    var secondaryAttribute: String? = null
     var attributesAuctionHouse: MutableList<JsonObject> = mutableListOf()
-
+    var arrayOfAttributes = arrayOf("mending", "lifeline", "blazing_resistance", "dominance", "ender_resistance", "breeze", "veteran", "mana_regeneration", "mana_pool", "experience", "blazing_fortune", "life_regeneration", "midas_touch", "undead", "speed", "fishing_speed", "arachno_resistance", "undead_resistance", "combo", "ender", "infection", "trophy_hunter", "double_hook", "attack_speed", "arachno", "elite", "mana_steal", "life_recovery", "fisherman", "fishing_experience", "ignition", "fortitude", "magic_find", "blazing", "deadeye", "hunter", "warrior")
 
     private val backgroundBlock = UIBlock(Color(20, 20, 20, 75)).constrain {
         x = 5.percent
@@ -67,6 +74,32 @@ object MeltributesGui: WindowScreen(ElementaVersion.V1) {
         height = 90.percent
     } childOf backgroundBlock
 
+
+    override fun onKeyPressed(keyCode: Int, typedChar: Char, modifiers: UKeyboard.Modifiers?) {
+        if (!textInput.hasFocus() && keyCode != 0) {
+            if (!(keyCode == 14 && textInput.getText().isEmpty())) {
+                textInput.grabWindowFocus()
+                textInput.setActive(true)
+                textInput.keyType(typedChar, keyCode)
+            }
+        }
+        super.onKeyPressed(keyCode, typedChar, modifiers)
+
+    }
+
+    private val textInput = UITextInput("").constrain {
+        x = 1.percent
+        y = 1.percent
+        width = 98.percent
+        height = 3.percent
+    }.childOf(searchBlock).apply {
+        this.onKeyType { _, _ ->
+            run {
+                update()
+            }
+        }
+    }
+
     private val containerBlock = UIBlock(Color(20, 20, 20, 75)).constrain {
         x = 22.percent
         y = 5.percent
@@ -85,53 +118,99 @@ object MeltributesGui: WindowScreen(ElementaVersion.V1) {
     var auctionHouse = AuctionUtil.AuctionHouse
 
     override fun initScreen(width: Int, height: Int) {
+        numberOfAuctions.setText(attribute)
         Meltributes.launch {
             AuctionUtil.getAuctionHouse()
             if (auctionHouse != AuctionUtil.AuctionHouse) {
                 auctionHouse = AuctionUtil.AuctionHouse
-                attributesAuctionHouse = mutableListOf()
-                auctionHouse.forEach {
+                update()
+            }
+            attributesAuctionHouse = mutableListOf()
+            auctionHouse.forEach {
+                if((it["bin"] as JsonPrimitive).boolean) {
                     val nbt = (it["item_bytes"] as JsonPrimitive).content.decodeItemBytes()
-                    val flag = nbt.getCompoundTag("tag").getCompoundTag("ExtraAttributes").hasKey("attributes")
-                    if (flag) attributesAuctionHouse.add(it)
+                    if (nbt.getCompoundTag("tag").getCompoundTag("ExtraAttributes").getCompoundTag("attributes").hasKey(
+                            attribute)) attributesAuctionHouse.add(it)
                 }
             }
         }
         super.initScreen(width, height)
-        repeat(126) {
-            val component = UIBlock(Color(20, 20, 20, 75)).constrain {
-                x = CramSiblingConstraint(padding = 8f)
-                y = CramSiblingConstraint(padding = 8f)
-                this.width = 36.pixels()
-                this.height = 36.pixels()
-            } childOf container
-            ItemRenderComponent(null, 2.17f).constrain {
-                x = 5.percent
-                y = 5.percent
-                this.width = 90.percent
-                this.height = 90.percent
-            } childOf component
-            UIWrappedText("", true, centered = true).constrain {
-                x = 0.percent
-                y = 100.percent
-                this.width = 100.percent
-                this.height = Minecraft.getMinecraft().fontRendererObj.FONT_HEIGHT.pixels
-            } childOf component
-            itemComponentList.add(component)
+        if(itemComponentList.isEmpty()) {
+            repeat(126) {
+                val component = UIBlock(Color(20, 20, 20, 75)).constrain {
+                    x = CramSiblingConstraint(padding = 8f)
+                    y = CramSiblingConstraint(padding = 8f)
+                    this.width = 36.pixels()
+                    this.height = 36.pixels()
+                }.apply {
+                    onMouseClick {
+                        (this.children[0] as ItemRenderComponent).id?.let {
+                            Minecraft.getMinecraft().thePlayer.sendChatMessage("/viewauction $it")
+                            println(it)
+                        }
+                    }
+                }  childOf container
+                ItemRenderComponent(null, 2.17f).constrain {
+                    x = 5.percent
+                    y = 5.percent
+                    this.width = 90.percent
+                    this.height = 90.percent
+                } childOf component
+                UIWrappedText("", true, centered = true).constrain {
+                    x = 0.percent
+                    y = 100.percent
+                    this.width = 100.percent
+                    this.height = Minecraft.getMinecraft().fontRendererObj.FONT_HEIGHT.pixels
+                } childOf component
+                itemComponentList.add(component)
+            }
         }
     }
 
-    override fun onTick() {
-        for ((i, item) in itemComponentList.withIndex()) {
-            if(!item.children.isEmpty()) {
-                if (attributesAuctionHouse.size > i) {
-                    (item.children[0] as ItemRenderComponent).item = ItemStack.loadItemStackFromNBT((attributesAuctionHouse[i]["item_bytes"] as JsonPrimitive).content.decodeItemBytes())
-                    (item.children[1] as UIWrappedText).setText("§6" + compactDecimalFormat((attributesAuctionHouse[i]["starting_bid"] as JsonPrimitive).content.toLong()))
+    fun update() {
+        val filteredList = attributesAuctionHouse.toMutableList().filter { (it["item_name"] as JsonPrimitive).content.lowercase().contains(textInput.getText().lowercase()) }.toMutableList()
+        filteredList.sortBy {
+            (it["starting_bid"] as JsonPrimitive).content.toLong() / 2.0.pow(
+                (it["item_bytes"] as JsonPrimitive).content.decodeItemBytes().getCompoundTag("tag")
+                    .getCompoundTag("ExtraAttributes").getCompoundTag("attributes").getInteger(
+                    attribute
+                ) - 1
+            )
+        }
+        val size = MathHelper.clamp_int(filteredList.size, 0, itemComponentList.size)
+
+        for (i in 0 until itemComponentList.size) {
+            itemComponentList[i].let {
+                if(!it.children.isEmpty()) {
+                    if (i < size) {
+                        (it.children[0] as ItemRenderComponent).item = ItemStack.loadItemStackFromNBT((filteredList[i]["item_bytes"] as JsonPrimitive).content.decodeItemBytes())
+                        (it.children[0] as ItemRenderComponent).id = (filteredList[i]["uuid"] as JsonPrimitive).content
+                        (it.children[0] as ItemRenderComponent).tier = (filteredList[i]["item_bytes"] as JsonPrimitive).content.decodeItemBytes().getCompoundTag("tag").getCompoundTag("ExtraAttributes").getCompoundTag("attributes").getInteger(
+                            attribute)
+                        (it.children[1] as UIWrappedText).setText("§6" + compactDecimalFormat((filteredList[i]["starting_bid"] as JsonPrimitive).content.toLong() / 2.0.pow((filteredList[i]["item_bytes"] as JsonPrimitive).content.decodeItemBytes().getCompoundTag("tag").getCompoundTag("ExtraAttributes").getCompoundTag("attributes").getInteger(
+                            attribute) - 1)))
+                    } else {
+                        (it.children[0] as ItemRenderComponent).item = null
+                        (it.children[0] as ItemRenderComponent).id = null
+                        (it.children[0] as ItemRenderComponent).tier = null
+                        (it.children[1] as UIWrappedText).setText("")
+                    }
+
                 }
             }
         }
+
+
+        /*for ((i, item) in itemComponentList.withIndex()) {
+            if(!item.children.isEmpty()) {
+                if (attributesAuctionHouse.size > i) {
+                    (item.children[0] as ItemRenderComponent).item = ItemStack.loadItemStackFromNBT((attributesAuctionHouse[i]["item_bytes"] as JsonPrimitive).content.decodeItemBytes())
+                    (item.children[0] as ItemRenderComponent).id = (attributesAuctionHouse[i]["uuid"] as JsonPrimitive).content
+                    (item.children[1] as UIWrappedText).setText("§6" + compactDecimalFormat((attributesAuctionHouse[i]["starting_bid"] as JsonPrimitive).content.toLong()))
+                }
+            }
+        }*/
         numberOfAuctions.setText(attributesAuctionHouse.size.toString())
-        super.onTick()
     }
 
     fun compactDecimalFormat(number: Number): String {

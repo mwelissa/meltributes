@@ -21,17 +21,18 @@ import net.minecraft.nbt.NBTTagList
 import net.minecraft.util.ResourceLocation
 import org.apache.commons.codec.binary.Base64
 import java.io.ByteArrayInputStream
+import java.util.Arrays
 
 
 object MeltributesCommand: Command("meltributes") {
 
-    @SubCommand("dev")
-    fun dev() {
-        Meltributes.chat("Enabled Developer Mode.")
+    @SubCommand("list")
+    fun list() {
+        Meltributes.chat(MeltributesGui.arrayOfAttributes.contentToString())
     }
 
     @DefaultHandler
-    fun handle() {
+    fun handle(attribute: String, secondaryAttribute: String?) {
        /*
         Meltributes.launch {
             var auctionHouse = AuctionUtil.getAuctionHouse()
@@ -67,6 +68,12 @@ object MeltributesCommand: Command("meltributes") {
 
         }
         */
+        MeltributesGui.attribute = if (attribute in MeltributesGui.arrayOfAttributes) attribute else {
+            Meltributes.chat("Not an attribute id (/meltributes list)")
+            return
+        }
+        MeltributesGui.secondaryAttribute = if (secondaryAttribute in MeltributesGui.arrayOfAttributes) secondaryAttribute else null
+
         MeltributesGui.open()
     }
 }

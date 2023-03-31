@@ -10,14 +10,14 @@ import net.minecraft.item.ItemStack
 import java.awt.Color
 import kotlin.math.floor
 
-class ItemRenderComponent(var item: ItemStack?, private val itemScale: Float, var price: String = "0"): UIComponent() {
+class ItemRenderComponent(var item: ItemStack?, private val itemScale: Float, var id: String? = null, var tier: Int? = null): UIComponent() {
 
     override fun draw(matrixStack: UMatrixStack) {
         this.beforeDraw(matrixStack)
         val x = (this.getLeft()/itemScale).toInt()
         val y = (this.getTop()/itemScale).toInt()
         UGraphics.GL.scale(itemScale, itemScale, 1.0f)
-        renderItem(item, x, y, null)
+        renderItem(item, x, y, tier.toString())
         UGraphics.GL.scale(1.0f/itemScale, 1.0f/itemScale, 1.0f)
 
         /*if (this.isHovered()) {
@@ -33,7 +33,7 @@ class ItemRenderComponent(var item: ItemStack?, private val itemScale: Float, va
         RenderHelper.enableGUIStandardItemLighting()
         GlStateManager.enableDepth()
         itemRender.renderItemAndEffectIntoGUI(stack, x, y)
-        //itemRender.renderItemOverlayIntoGUI(Minecraft.getMinecraft().fontRendererObj, stack, x, y, text)
+        itemRender.renderItemOverlayIntoGUI(Minecraft.getMinecraft().fontRendererObj, stack, x, y, text)
         GlStateManager.disableDepth()
         GlStateManager.disableRescaleNormal()
     }

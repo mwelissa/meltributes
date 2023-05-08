@@ -5,7 +5,7 @@ plugins {
     infix fun PluginDependencySpec.from(artifact: String?): PluginDependencySpec = version("useModule@$artifact")
 
     java
-    kotlin("jvm") version "1.8.0"
+    kotlin("jvm") version "1.8.20"
     kotlin("plugin.serialization") version "1.8.10"
     id("com.github.johnrengelman.shadow") version "6.1.0"
     id("net.minecraftforge.gradle.forge") from "com.github.debuggingss:ForgeGradle:FG_2.1-SNAPSHOT"

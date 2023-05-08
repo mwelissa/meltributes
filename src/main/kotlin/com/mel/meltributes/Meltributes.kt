@@ -3,6 +3,7 @@ package com.mel.meltributes
 import com.mel.meltributes.commands.MeltributesCommand
 import com.mel.meltributes.core.Config
 import com.mel.meltributes.events.packet.PacketEvent
+import com.mel.meltributes.util.AuctionUtil
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.asCoroutineDispatcher
@@ -12,6 +13,7 @@ import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.fml.common.Mod
 import net.minecraftforge.fml.common.event.FMLInitializationEvent
 import java.util.concurrent.Executors
+import kotlinx.serialization.json.jsonPrimitive
 import kotlin.coroutines.CoroutineContext
 
 @Mod(
@@ -34,6 +36,8 @@ object Meltributes: CoroutineScope {
         Config.preload()
         MeltributesCommand.register()
         MinecraftForge.EVENT_BUS.register(PacketEvent)
+
+        AuctionUtil
     }
 
     fun chat(message: Any) {

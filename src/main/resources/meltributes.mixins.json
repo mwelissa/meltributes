@@ -5,6 +5,5 @@
     "package": "com.mel.meltributes.mixins",
     "refmap": "meltributes.mixins.refmap.json",
     "mixins": [
-        "MinecraftMixin"
     ]
 }
